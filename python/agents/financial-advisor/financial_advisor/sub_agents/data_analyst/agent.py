@@ -18,6 +18,8 @@ from google.adk import Agent
 from google.adk.tools import google_search
 
 from . import prompt
+from .csv_utils import load_transactions_csv, answer_csv_question
+from .csv_tool import csv_qa_llm
 
 MODEL = "gemini-2.5-pro-preview-05-06"
 
@@ -26,5 +28,10 @@ data_analyst_agent = Agent(
     name="data_analyst_agent",
     instruction=prompt.DATA_ANALYST_PROMPT,
     output_key="market_data_analysis_output",
-    tools=[google_search],
+    tools=[google_search, csv_qa_llm],
 )
+
+# Example: function to answer questions about the CSV file
+def answer_question_about_csv(question: str) -> str:
+    df = load_transactions_csv()
+    return answer_csv_question(df, question)
