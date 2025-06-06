@@ -64,9 +64,13 @@ async def get_available_model():
         print(f"Error listing models: {str(e)}")
         return None
 
-async def csv_qa_llm_tool(question: str, max_rows: int = 20) -> str:
+async def csv_qa_llm_tool(question: str, max_rows: int | None = 20) -> str:
     """
     Enhanced tool for analyzing CSV transaction data using Google's Generative AI.
+    
+    Args:
+        question: The question to analyze
+        max_rows: Maximum number of rows to analyze. Use None for all rows.
     """
     # Ensure GenAI is set up
     if not setup_genai():
@@ -101,7 +105,13 @@ async def csv_qa_llm_tool(question: str, max_rows: int = 20) -> str:
                 transactions_df = transactions_df.nlargest(5, 'amount')
         
         # Create a subset of the data for analysis
-        sample = transactions_df.head(max_rows).fillna('')
+        if max_rows is not None:
+            sample = transactions_df.head(max_rows)
+        else:
+            sample = transactions_df  # Use all rows
+            print(f"Analyzing all {len(transactions_df)} rows...")
+            
+        sample = sample.fillna('')
         transactions_text = sample.to_string(index=False)
         
         # Create a structured prompt for the LLM

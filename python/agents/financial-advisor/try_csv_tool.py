@@ -19,8 +19,8 @@ async def main():
     print("\nExample questions you can ask:")
     print("- What are my top 5 highest value transactions?")
     print("- Show me my recent UPI payments")
-    print("- What are my monthly spending patterns?")
-    print("- Show me my subscription payments")
+    print("- What are my monthly spending patterns? [add --all to analyze all rows]")
+    print("- Show me my subscription payments [add --last=N to see last N rows]")
     print("- What's my spending trend over weekends vs weekdays?")
     
     while True:
@@ -37,8 +37,20 @@ async def main():
                 
             print("\n🔍 Analyzing...")
             try:
+                # Parse flags from question
+                max_rows = None  # None means analyze all rows
+                if '--all' in question:
+                    question = question.replace('--all', '').strip()
+                    max_rows = None
+                elif '--last=' in question:
+                    # Extract N from --last=N
+                    import re
+                    if match := re.search(r'--last=(\d+)', question):
+                        max_rows = int(match.group(1))
+                        question = re.sub(r'--last=\d+', '', question).strip()
+                
                 print("Calling csv_qa_llm_tool...")
-                response = await csv_qa_llm_tool(question)
+                response = await csv_qa_llm_tool(question, max_rows)
                 print(f"\n{response}")
             except Exception as e:
                 print(f"\n❌ Analysis error: {str(e)}")
